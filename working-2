@@ -1,0 +1,132 @@
+import java.util.*;
+import java.io.*;
+
+public class LaundryProgram{
+ public static ArrayList<Clothing> arrayClothing = new ArrayList<Clothing>();
+ public static ArrayList<Clothing> arrayHamperOfClothing = new ArrayList<Clothing>();
+  
+  public static void main(String[] args)throws IOException{
+    storeClothingInfo();
+  }
+  
+  public static void storeClothingInfo()throws IOException{ 
+    Scanner clothingFileRecordInput = new Scanner(new File("ClothingRecords.txt"));
+   
+    while(clothingFileRecordInput.hasNextLine())
+       arrayClothing.add(createClothingObject(clothingFileRecordInput.nextLine()));
+    
+    clothingFileRecordInput.close();
+    displayMainMenu();
+    
+  }
+  
+  public static Clothing createClothingObject(String clothingFileLine){ //splits up clothing file record lines 
+    String[] clothingFieldsArray = clothingFileLine.split(" ");
+    String name = clothingFieldsArray[0];
+    double wears = Double.parseDouble(clothingFieldsArray[1]);
+    double maxWears = Double.parseDouble(clothingFieldsArray[2]);
+    double volume = Double.parseDouble(clothingFieldsArray[3]);
+    double wearsTotal = Double.parseDouble(clothingFieldsArray[4]);
+    Clothing pieceOfClothing = new Clothing(name,wears,maxWears,volume,wearsTotal);
+    
+    if(wears >= maxWears)
+      storeInHamper(pieceOfClothing);
+      
+    return pieceOfClothing;
+  }
+  
+  public static void storeInHamper(Clothing pieceOfClothing){
+    arrayHamperOfClothing.add(pieceOfClothing);
+  }
+  
+  public static void displayMainMenu()throws IOException{ // displays main options to user
+    try{
+    Scanner in = new Scanner(System.in);
+    System.out.printf("Please enter one of the following options:\n" + 
+                      "1.) Display Clothing Status\n" +
+                      "2.) Reset Laundry\n"+
+                      "3.) Display Hamper Status\n" +
+                      "4.) Add clothing\n"+
+                      "5.) Delete clothing\n"+
+                      "6.) Exit Program\n");
+    int choice = in.nextInt();
+    
+    while(choice < 1 || choice > 6){
+       System.out.printf("A value between 1 and 6 was not entered. Try Again.\n");
+       choice = in.nextInt();
+    }
+    
+    in.close();
+    decidesMethodToCall(choice);
+      
+    } catch(InputMismatchException e){
+      System.out.printf("***Invalid input was entered.***\n");
+      displayMainMenu();
+    }
+  }
+  
+  public static void decidesMethodToCall(int choice)throws IOException{  
+   if(choice == 1)
+       displayAllClothingStatus();
+    else if(choice == 2)
+       emptyHamper();
+  // else if(choice == 3)
+  //     displayHamperOfClothing();
+   /* else if(choice == 4)
+       addClothing();
+    else if(choice == 5)
+       deleteClothing();
+    else if(choice == 6)
+       System.exit(0);  
+  */
+    
+  }
+  public static void displayAllClothingStatus()throws IOException{
+    System.out.println("    Clothing   Number of Wears    Max Wears    Volume    Total Wears");
+    
+    for(int i =0; i < arrayClothing.size();i++){
+      
+    String name = (arrayClothing.get(i)).getName();
+    name = name.replace('-',' ');
+    double wears = (arrayClothing.get(i)).getWears();
+    double maxWears = (arrayClothing.get(i)).getMaxWears();
+    double volume = (arrayClothing.get(i)).getVolume();
+    double totalWears = (arrayClothing.get(i)).getWearsTotal();
+    
+    System.out.printf("%12s %17.2f %12.2f %9.2f %14.2f\n",name,wears,maxWears,volume,totalWears);
+    }
+    clearOldInfoFromFilesArray();
+    storeClothingInfo();
+  }
+  
+  public static void emptyHamper()throws IOException{ // cannot use setwears, arraylist is temp so must change file 
+   //***Issue with max wears being set to 0.0***
+    FileWriter overWriteFile = new FileWriter("ClothingRecords.txt",false); 
+    
+    for(int i = 0; i < arrayClothing.size(); i++){
+      (arrayClothing.get(i)).setWears(0);
+    }
+    
+    
+    for(int i = 0; i < arrayClothing.size(); i++){
+      overWriteFile.write((arrayClothing.get(i)).getName() + " " + (arrayClothing.get(i)).getWears() + 
+                          " " + (arrayClothing.get(i)).getWears() + " " + (arrayClothing.get(i)).getVolume()
+                                   + " " + (arrayClothing.get(i)).getWearsTotal());
+      overWriteFile.write("\n");
+      
+    }
+      overWriteFile.close();
+    
+                                      
+    
+    
+    clearOldInfoFromFilesArray();
+    storeClothingInfo();
+  }
+  
+  public static void clearOldInfoFromFilesArray(){ 
+   arrayClothing.clear();
+   arrayHamperOfClothing.clear();
+  }
+  
+}
